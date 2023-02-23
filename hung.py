@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
+import asyncio
 
 from draw import drawHangman
 
@@ -19,18 +20,54 @@ bot = commands.Bot(intents=intents, command_prefix='h!')
 bot.current_channels = set()
 
 
+# function that chooses a word from the dictionary
+def choose_word() -> str:
+    pass
+
+
 @bot.event
 async def on_ready() -> None:
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
 
 
-@bot.tree.command
+# gamemode for when word is chose randomly from the dictionary
+@bot.command(name='play')
+async def play_dict(ctx) -> None:
+
+    if ctx.channel not in bot.current_channels:
+        bot.current_channels.add(ctx.channel)
+
+        word = choose_word()
+
+        bot.current_channels.remove(ctx.channel)
+
+
+# gamemode for when a word is provided by a user
+@bot.tree.command()
 async def hang(interaction: discord.Interaction, word: str = " ") -> None:
 
     if interaction.channel not in bot.current_channels:
-
         bot.current_channels.add(interaction.channel)
-        interaction.response.send_message(f'You chose {word}', ephemeral=True)
+
+        attempt_number = 1
+
+        await interaction.response.send_message(f'You chose {word}.', ephemeral=True)
+
+        while attempt_number <= 10:
+            await interaction.response.send_message(drawHangman(attempt_number))
+            try:
+                reply_message = await bot.wait_for('message')
+                if reply_message.content.length == 1:
+                    # handle comparison with the answer
+                    # attempt number += 1 if wrong
+                    pass
+                elif reply_message.content == word:
+                    await interaction.response.send_message('You win!')
+            except asyncio.TimeoutError:
+                await interaction.response.send_message(f'You ran out of time. \n The word was {word}.')
         bot.current_channels.remove(interaction.channel)
 
+
+if __name__ == '__main__':
+    bot.run(token)

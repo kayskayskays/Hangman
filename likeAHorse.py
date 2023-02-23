@@ -3,27 +3,27 @@
 def drawHangman(i):
     match i:
         case 0:
-            return '\n\n\n\n\n\n=========='
+            return '          \n          \n          \n          \n          \n          \n=========='
         case 1:
-            return '\n  |\n  |               \n  |\n  |\n  |\n=========='
+            return '          \n  |       \n  |       \n  |       \n  |       \n  |       \n=========='
         case 2:
-            return '  +---+\n  |\n  |        \n  |\n  |\n  |\n=========='
+            return '  +---+   \n  |       \n  |       \n  |       \n  |       \n  |       \n=========='
         case 3:
-            return '  +---+\n  |/\n  |       \n  |\n  |\n  |\n=========='
+            return '  +---+   \n  |/      \n  |       \n  |       \n  |       \n  |       \n=========='
         case 4:
-            return '  +---+\n  |/  |\n  |    \n  |\n  |\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |       \n  |       \n  |       \n  |       \n=========='
         case 5:
-            return '  +---+\n  |/  |\n  |   O\n  |\n  |\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |       \n  |       \n  |       \n=========='
         case 6:
-            return '  +---+\n  |/  |\n  |   O\n  |   |\n  |\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |   |   \n  |       \n  |       \n=========='
         case 7:
-            return '  +---+\n  |/  |\n  |   O\n  |   |\n  |  /\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |   |   \n  |  /    \n  |       \n=========='
         case 8:
-            return '  +---+\n  |/  |\n  |   O\n  |   |\n  |  / \\\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |   |   \n  |  / \\  \n  |       \n=========='
         case 9:
-            return '  +---+\n  |/  |\n  |   O\n  |  /|\n  |  / \\\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |  /|   \n  |  / \\  \n  |       \n=========='
         case 10:
-            return '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  / \\\n  |\n=========='
+            return '  +---+   \n  |/  |   \n  |   O   \n  |  /|\\  \n  |  / \\  \n  |       \n=========='
         case _:
             return 'somebody fricked up while programming\n\n\n\n\n\n'
 
@@ -37,6 +37,8 @@ def generateDisplay(word, guesses):
             correct.append(g)
         else:
             wrong.append(g)
+    if len(wrong)>10:
+        return '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /∞\\\n  |   ↓\n=========='
     # Generate the guess line
     gLine = ''
     for w in word:
@@ -53,7 +55,7 @@ def generateDisplay(word, guesses):
 
     
 ## TEST CODE ##
-# test  = ['a','b','d','h','e','p','w','l']
-# for i in range(0,len(test)+1):
-#     print(generateDisplay('helpn\'t me',test[0:i]))
-#     print("\n\n")
+test  = ['a','b','d','h','e','p','w','l','m','n','o','q','r','s','t','w']
+for i in range(0,len(test)+1):
+    print(generateDisplay('help',test[0:i]))
+    print("\n\n")

@@ -38,7 +38,8 @@ def generateDisplay(word, guesses):
         else:
             wrong.append(g)
     if len(wrong)>10:
-        return '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /∞\\\n  |   ↓\n=========='
+        #↓∞
+        return '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /w\\\n  |   |\n=========='
     # Generate the guess line
     gLine = ''
     for w in word:

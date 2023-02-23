@@ -38,8 +38,11 @@ def generateDisplay(word, guesses):
         else:
             wrong.append(g)
     if len(wrong)>10:
-        #↓∞
-        return '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /w\\\n  |   |\n=========='
+        try:
+            deathscreen = '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /'+chr(230)+'\\\n  |   '+chr(182)+'\n=========='
+        except:
+            deathscreen = '  +---+\n  |/  |\n  |   O\n  |  /|\\\n  |  /w\\\n  |   |\n=========='
+        return deathscreen
     # Generate the guess line
     gLine = ''
     for w in word:

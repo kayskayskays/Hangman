@@ -1,9 +1,10 @@
-
 import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
 import asyncio
+import linecache
+import random
 
 from likeAHorse import generateDisplay, drawHangman
 
@@ -22,7 +23,8 @@ bot.current_channels = set()
 
 # function that chooses a word from the dictionary
 def choose_word() -> str:
-    pass
+    word = linecache.getline('dictionary.txt', random.randint(1, 37105))
+    return word
 
 
 @bot.event
@@ -34,7 +36,6 @@ async def on_ready() -> None:
 # gamemode for when word is chose randomly from the dictionary
 @bot.command(name='play')
 async def play_dict(ctx) -> None:
-
     if ctx.channel not in bot.current_channels:
         bot.current_channels.add(ctx.channel)
 
@@ -45,31 +46,32 @@ async def play_dict(ctx) -> None:
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
-                if reply_message.content == word:
-                    await ctx.channel.send_message('You win!')
-                elif reply_message.content.length == 1:
+                if reply_message.content == '--q':
+                    await ctx.channel.send('You quit.')
+                    bot.current_channels.remove(ctx.channel)
+                    return
+                elif reply_message.content == word:
+                    await ctx.channel.send('You win!')
+                elif len(reply_message.content) == 1:
                     if reply_message.content in guesses:
                         await ctx.channel.send(f'"{reply_message.content}" has already been guessed. Guess again.')
                     else:
                         guesses.append(reply_message.content)
                         if reply_message.content not in word:
                             attempt_number += 1
-                        await ctx.channel.send_message(generateDisplay(word, guesses))
+                        await ctx.channel.send(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
-                    await ctx.channel.send_message(f'Incorrect! \n {generateDisplay(word, guesses)}')
+                    await ctx.channel.send(f'Incorrect! \n {generateDisplay(word, guesses)}')
             except asyncio.TimeoutError:
-                await ctx.channel.send_message(f'You ran out of time. The word was {word}.')
-
-            await ctx.channel.send_message(generateDisplay(word, guesses))
-
+                await ctx.channel.send(f'You ran out of time. The word was {word}.')
+        await ctx.channel.send(f'The man was so hung. You lose. \n The word was {word}.')
         bot.current_channels.remove(ctx.channel)
 
 
 # gamemode for when a word is provided by a user
 @bot.tree.command()
 async def hang(interaction: discord.Interaction, word: str = " ") -> None:
-
     if interaction.channel not in bot.current_channels:
         bot.current_channels.add(interaction.channel)
 
@@ -82,23 +84,28 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
             try:
                 reply_message = await bot.wait_for('message')
                 if reply_message.content == word:
-                    await interaction.response.send_message('You win!')
+                    await interaction.channel.send('You win!')
 
-                elif reply_message.content.length == 1:
-                    if reply_message.content in guesses:
-                        await interaction.response.send_message(f'"{reply_message.content}" has already been guessed.'
-                                                                f' Guess again.')
+                elif len(reply_message.content) == 1:
+                    if reply_message.content == '--q':
+                        await interaction.channel.send('You quit.')
+                        bot.current_channels.remove(interaction.channel)
+                        return
+                    elif reply_message.content in guesses:
+                        await interaction.channel.send(f'"{reply_message.content}" has already been guessed.'
+                                                       f' Guess again.')
                     else:
                         guesses.append(reply_message.content)
                         if reply_message.content not in word:
                             attempt_number += 1
-                        await interaction.response.send_message(generateDisplay(word, guesses))
+                        await interaction.channel.send(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
-                    await interaction.response.send_message(f'Incorrect. \n {generateDisplay(word, guesses)}')
+                    await interaction.channel.send(f'Incorrect. \n {generateDisplay(word, guesses)}')
 
             except asyncio.TimeoutError:
-                await interaction.response.send_message(f'You ran out of time. \n The word was {word}.')
+                await interaction.channel.send(f'You ran out of time. \n The word was {word}.')
+        await interaction.channel.send(f'The man was so hung. You lose. \n The word was {word}.')
         bot.current_channels.remove(interaction.channel)
 
 

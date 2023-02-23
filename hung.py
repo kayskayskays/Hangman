@@ -6,7 +6,7 @@ import asyncio
 import linecache
 import random
 
-from likeAHorse import generateDisplay, drawHangman
+from likeAHorse import generateDisplay
 
 load_dotenv()
 
@@ -60,6 +60,10 @@ async def play_dict(ctx) -> None:
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
+                # debugging
+                if reply_message.content == '**':
+                    guesses = ['*' for _ in range(50)]
+                    attempt_number = 11
                 if reply_message.content == '--q':
                     await ctx.channel.send('You quit.')
                     bot.current_channels.remove(ctx.channel)
@@ -68,7 +72,7 @@ async def play_dict(ctx) -> None:
                     for w in word:
                         if w not in guesses:
                             guesses.append(w)
-                    await ctx.channel.send(f'{generateDisplay(word, guesses)} \n You win!')
+                    await ctx.channel.send(f'{generateDisplay(word, guesses)} \nYou win!')
                     bot.current_channels.remove(ctx.channel)
                     return
                 elif len(reply_message.content) == 1:
@@ -86,10 +90,15 @@ async def play_dict(ctx) -> None:
                 else:
                     attempt_number += 1
                     guesses.append('*')
-                    await ctx.channel.send(f'Incorrect! \n {generateDisplay(word, guesses)}')
+                    await ctx.channel.send(f'Incorrect! \n{generateDisplay(word, guesses)}')
+
             except asyncio.TimeoutError:
-                await ctx.channel.send(f'You ran out of time. The word was {word}.')
-        await ctx.channel.send(f'The man was so hung. You lose. \n The word was {word}.')
+                await ctx.channel.send(f'{generateDisplay(word, guesses)} \nYou ran out of time. The word was {word}.')
+                bot.current_channels.remove(ctx.channel)
+                return
+
+        await ctx.channel.send(f'{generateDisplay(word, guesses)} \nThe man was so hung. You lose. '
+                               f'\nThe word was {word}.')
         bot.current_channels.remove(ctx.channel)
 
 
@@ -108,7 +117,15 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
-                if reply_message.content == word:
+                # debugging
+                if reply_message.content == '**':
+                    guesses = ['*' for _ in range(50)]
+                    attempt_number = 11
+                if reply_message.content == '--q':
+                    await interaction.channel.send('You quit.')
+                    bot.current_channels.remove(interaction.channel)
+                    return
+                elif reply_message.content == word:
                     for w in word:
                         if w not in guesses:
                             guesses.append(w)
@@ -116,11 +133,7 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
                     bot.current_channels.remove(interaction.channel)
                     return
                 elif len(reply_message.content) == 1:
-                    if reply_message.content == '--q':
-                        await interaction.channel.send('You quit.')
-                        bot.current_channels.remove(interaction.channel)
-                        return
-                    elif reply_message.content in guesses:
+                    if reply_message.content in guesses:
                         await interaction.channel.send(f'"{reply_message.content}" has already been guessed.'
                                                        f' Guess again.')
                     else:
@@ -135,11 +148,16 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
                 else:
                     attempt_number += 1
                     guesses.append('*')
-                    await interaction.channel.send(f'Incorrect. \n {generateDisplay(word, guesses)}')
+                    await interaction.channel.send(f'Incorrect. \n{generateDisplay(word, guesses)}')
 
             except asyncio.TimeoutError:
-                await interaction.channel.send(f'You ran out of time. \n The word was {word}.')
-        await interaction.channel.send(f'The man was so hung. You lose. \n The word was {word}.')
+                await interaction.channel.send(f'{generateDisplay(word, guesses)} \nYou ran out of time. \nThe '
+                                               f'word was {word}.')
+                bot.current_channels.remove(interaction.channel)
+                return
+
+        await interaction.channel.send(f'{generateDisplay(word, guesses)} \nThe man was so hung. You lose. '
+                                       f'\nThe word was {word}.')
         bot.current_channels.remove(interaction.channel)
 
 

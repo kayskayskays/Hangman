@@ -4,7 +4,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 
-from draw import drawHangman
+from likeAHorse import generateDisplay
 
 load_dotenv()
 

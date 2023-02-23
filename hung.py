@@ -40,21 +40,28 @@ async def play_dict(ctx) -> None:
 
         word = choose_word()
         attempt_number = 1
+        guesses = []
+
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
                 if reply_message.content == word:
                     await ctx.channel.send_message('You win!')
                 elif reply_message.content.length == 1:
-                    # handle stuff blah blah
-                    await ctx.channel.send_message(drawHangman(attempt_number))
+                    if reply_message.content in guesses:
+                        await ctx.channel.send(f'"{reply_message.content}" has already been guessed. Guess again.')
+                    else:
+                        guesses.append(reply_message.content)
+                        if reply_message.content not in word:
+                            attempt_number += 1
+                        await ctx.channel.send_message(drawHangman(word, guesses))
                 else:
                     attempt_number += 1
-                    await ctx.channel.send_message(drawHangman(attempt_number))
+                    await ctx.channel.send_message(f'Incorrect! \n {drawHangman(word, guesses)}')
             except asyncio.TimeoutError:
                 await ctx.channel.send_message(f'You ran out of time. The word was {word}.')
 
-            await ctx.channel.send_message(drawHangman(attempt_number))
+            await ctx.channel.send_message(drawHangman(word, guesses))
 
         bot.current_channels.remove(ctx.channel)
 
@@ -67,6 +74,7 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
         bot.current_channels.add(interaction.channel)
 
         attempt_number = 1
+        guesses = []
 
         await interaction.response.send_message(f'You chose {word}.', ephemeral=True)
 
@@ -77,11 +85,17 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
                     await interaction.response.send_message('You win!')
 
                 elif reply_message.content.length == 1:
-                    # handle stuff blah blah
-                    await interaction.response.send_message(drawHangman(attempt_number))
+                    if reply_message.content in guesses:
+                        await interaction.response.send_message(f'"{reply_message.content}" has already been guessed.'
+                                                                f' Guess again.')
+                    else:
+                        guesses.append(reply_message.content)
+                        if reply_message.content not in word:
+                            attempt_number += 1
+                        await interaction.response.send_message(drawHangman(word, guesses))
                 else:
                     attempt_number += 1
-                    await interaction.response.send_message(drawHangman(attempt_number))
+                    await interaction.response.send_message(f'Incorrect. \n {drawHangman(word, guesses)}')
 
             except asyncio.TimeoutError:
                 await interaction.response.send_message(f'You ran out of time. \n The word was {word}.')

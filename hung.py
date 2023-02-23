@@ -39,6 +39,22 @@ async def play_dict(ctx) -> None:
         bot.current_channels.add(ctx.channel)
 
         word = choose_word()
+        attempt_number = 1
+        while attempt_number <= 10:
+            try:
+                reply_message = await bot.wait_for('message')
+                if reply_message.content == word:
+                    await ctx.channel.send_message('You win!')
+                elif reply_message.content.length == 1:
+                    # handle stuff blah blah
+                    await ctx.channel.send_message(drawHangman(attempt_number))
+                else:
+                    attempt_number += 1
+                    await ctx.channel.send_message(drawHangman(attempt_number))
+            except asyncio.TimeoutError:
+                await ctx.channel.send_message(f'You ran out of time. The word was {word}.')
+
+            await ctx.channel.send_message(drawHangman(attempt_number))
 
         bot.current_channels.remove(ctx.channel)
 
@@ -55,15 +71,18 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
         await interaction.response.send_message(f'You chose {word}.', ephemeral=True)
 
         while attempt_number <= 10:
-            await interaction.response.send_message(drawHangman(attempt_number))
             try:
                 reply_message = await bot.wait_for('message')
-                if reply_message.content.length == 1:
-                    # handle comparison with the answer
-                    # attempt number += 1 if wrong
-                    pass
-                elif reply_message.content == word:
+                if reply_message.content == word:
                     await interaction.response.send_message('You win!')
+
+                elif reply_message.content.length == 1:
+                    # handle stuff blah blah
+                    await interaction.response.send_message(drawHangman(attempt_number))
+                else:
+                    attempt_number += 1
+                    await interaction.response.send_message(drawHangman(attempt_number))
+
             except asyncio.TimeoutError:
                 await interaction.response.send_message(f'You ran out of time. \n The word was {word}.')
         bot.current_channels.remove(interaction.channel)

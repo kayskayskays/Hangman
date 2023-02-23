@@ -24,7 +24,19 @@ bot.current_channels = set()
 # function that chooses a word from the dictionary
 def choose_word() -> str:
     word = linecache.getline('dictionary.txt', random.randint(1, 37105))
-    return word
+    return word[:-1]
+
+
+def check_solved(word: str, guesses: list[str]) -> bool:
+    complete = True
+
+    for w in word:
+        if w in guesses:
+            complete = True
+        else:
+            complete = False
+            break
+    return complete
 
 
 @bot.event
@@ -43,6 +55,8 @@ async def play_dict(ctx) -> None:
         attempt_number = 1
         guesses = []
 
+        await ctx.channel.send('A word has been chosen. Start guessing!')
+
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
@@ -51,17 +65,27 @@ async def play_dict(ctx) -> None:
                     bot.current_channels.remove(ctx.channel)
                     return
                 elif reply_message.content == word:
-                    await ctx.channel.send('You win!')
+                    for w in word:
+                        if w not in guesses:
+                            guesses.append(w)
+                    await ctx.channel.send(f'{generateDisplay(word, guesses)} \n You win!')
+                    bot.current_channels.remove(ctx.channel)
+                    return
                 elif len(reply_message.content) == 1:
                     if reply_message.content in guesses:
                         await ctx.channel.send(f'"{reply_message.content}" has already been guessed. Guess again.')
                     else:
                         guesses.append(reply_message.content)
+                        if check_solved(word, guesses):
+                            await ctx.channel.send(f'{generateDisplay(word, guesses)} \nYou win!')
+                            bot.current_channels.remove(ctx.channel)
+                            return
                         if reply_message.content not in word:
                             attempt_number += 1
                         await ctx.channel.send(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
+                    guesses.append('*')
                     await ctx.channel.send(f'Incorrect! \n {generateDisplay(word, guesses)}')
             except asyncio.TimeoutError:
                 await ctx.channel.send(f'You ran out of time. The word was {word}.')
@@ -79,13 +103,18 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
         guesses = []
 
         await interaction.response.send_message(f'You chose {word}.', ephemeral=True)
+        await interaction.channel.send('A word has been chosen. Start guessing!')
 
         while attempt_number <= 10:
             try:
                 reply_message = await bot.wait_for('message')
                 if reply_message.content == word:
-                    await interaction.channel.send('You win!')
-
+                    for w in word:
+                        if w not in guesses:
+                            guesses.append(w)
+                    await interaction.channel.send(f'{generateDisplay(word, guesses)} \nYou win!')
+                    bot.current_channels.remove(interaction.channel)
+                    return
                 elif len(reply_message.content) == 1:
                     if reply_message.content == '--q':
                         await interaction.channel.send('You quit.')
@@ -96,11 +125,16 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
                                                        f' Guess again.')
                     else:
                         guesses.append(reply_message.content)
+                        if check_solved(word, guesses):
+                            await interaction.channel.send(f'{generateDisplay(word, guesses)} \nYou win!')
+                            bot.current_channels.remove(interaction.channel)
+                            return
                         if reply_message.content not in word:
                             attempt_number += 1
                         await interaction.channel.send(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
+                    guesses.append('*')
                     await interaction.channel.send(f'Incorrect. \n {generateDisplay(word, guesses)}')
 
             except asyncio.TimeoutError:

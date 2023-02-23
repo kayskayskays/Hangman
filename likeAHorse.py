@@ -49,11 +49,12 @@ def generateDisplay(word, guesses):
         if w in correct or not w.isalpha():
             gLine+=w+' '
         else:
-            gLine+='_ '
+            gLine+='\_ '
     # Generate wrong line
     wLine = ''
     for w in sorted(wrong):
-        wLine += w + ' '
+        if w.isalpha():
+            wLine += w + ' '
     return drawHangman(len(wrong))+'\n'+gLine+'\n'+wLine
         
 

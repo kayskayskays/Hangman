@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 import asyncio
 
-from likeAHorse import generateDisplay
+from likeAHorse import generateDisplay, drawHangman
 
 load_dotenv()
 
@@ -54,14 +54,14 @@ async def play_dict(ctx) -> None:
                         guesses.append(reply_message.content)
                         if reply_message.content not in word:
                             attempt_number += 1
-                        await ctx.channel.send_message(drawHangman(word, guesses))
+                        await ctx.channel.send_message(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
-                    await ctx.channel.send_message(f'Incorrect! \n {drawHangman(word, guesses)}')
+                    await ctx.channel.send_message(f'Incorrect! \n {generateDisplay(word, guesses)}')
             except asyncio.TimeoutError:
                 await ctx.channel.send_message(f'You ran out of time. The word was {word}.')
 
-            await ctx.channel.send_message(drawHangman(word, guesses))
+            await ctx.channel.send_message(generateDisplay(word, guesses))
 
         bot.current_channels.remove(ctx.channel)
 
@@ -92,10 +92,10 @@ async def hang(interaction: discord.Interaction, word: str = " ") -> None:
                         guesses.append(reply_message.content)
                         if reply_message.content not in word:
                             attempt_number += 1
-                        await interaction.response.send_message(drawHangman(word, guesses))
+                        await interaction.response.send_message(generateDisplay(word, guesses))
                 else:
                     attempt_number += 1
-                    await interaction.response.send_message(f'Incorrect. \n {drawHangman(word, guesses)}')
+                    await interaction.response.send_message(f'Incorrect. \n {generateDisplay(word, guesses)}')
 
             except asyncio.TimeoutError:
                 await interaction.response.send_message(f'You ran out of time. \n The word was {word}.')
